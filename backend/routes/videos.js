@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+
+// Ensure all these functions are imported from your controller
 const {
   getDirectUploadUrl,
   startRemoteUpload,
@@ -14,6 +16,7 @@ const {
   getComments,
   searchVideos,
 } = require("../controllers/videoController");
+
 const { ensureAuthenticated } = require("../middlewares/authMiddleware");
 
 const storage = multer.memoryStorage();
@@ -23,7 +26,7 @@ const upload = multer({ storage: storage });
 
 // 1. All SPECIFIC string routes come first.
 router.get("/get-upload-url", ensureAuthenticated, getDirectUploadUrl);
-router.get("/search", searchVideos); // <-- MOVED HERE
+router.get("/search", searchVideos);
 router.post("/remote-upload/start", ensureAuthenticated, startRemoteUpload);
 router.post(
   "/create-record",

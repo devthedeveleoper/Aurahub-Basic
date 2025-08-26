@@ -23,14 +23,11 @@ const Navbar = () => {
     setGlobalSearchTerm(debouncedSearchTerm);
   }, [debouncedSearchTerm, setGlobalSearchTerm]);
 
-  const handleLogout = async () => {
-    try {
-      await API.post("/auth/logout");
-      clearUser();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+  const handleLogout = () => {
+    // No API call needed
+    localStorage.removeItem("token"); // Remove the token
+    clearUser(); // Clear the Zustand store
+    navigate("/login");
   };
 
   return (

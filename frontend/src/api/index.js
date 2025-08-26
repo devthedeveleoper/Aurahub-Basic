@@ -5,7 +5,21 @@ const API_URL =
 
 const API = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  // We no longer need withCredentials for JWT, but it doesn't hurt to keep it
 });
+
+// Use an interceptor to add the auth token to every request
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = token;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export default API;

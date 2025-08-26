@@ -18,7 +18,12 @@ const VideoCard = ({ video }) => {
             {video.title}
           </h3>
           <p className="mt-1 text-sm text-gray-600">
-            {video.uploader?.username || "Unknown Uploader"}
+            <Link
+              to={`/profile/${video.uploader?.username}`}
+              className="hover:text-blue-600 hover:underline"
+            >
+              {video.uploader?.username || "Unknown Uploader"}
+            </Link>
           </p>
           <div className="mt-2 flex items-center text-xs text-gray-500">
             <span>{video.views} views</span>

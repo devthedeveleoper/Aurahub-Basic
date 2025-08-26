@@ -1,27 +1,50 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api";
 import useAuthStore from "../stores/authStore";
+import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+
+// 1. Define the validation schema for the login form
+const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  // 2. Initialize React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm({
+    resolver: yupResolver(loginSchema),
+  });
 
+  // 3. The submission handler now receives validated form data
+  const onSubmit = async (data) => {
     try {
-      const response = await API.post("/auth/login", { email, password });
+      const response = await API.post("/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
+      localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
-      navigate("/"); // Redirect to home on successful login
+      navigate("/");
+      toast.success(`Welcome back, ${response.data.user.username}!`);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Login failed. Check your credentials."
-      );
+      const errorMessage =
+        err.response?.data?.message ||
+        "Login failed. Please check your credentials.";
+      setError("root.serverError", { type: "custom", message: errorMessage });
     }
   };
 
@@ -35,10 +58,11 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          {error && (
+        {/* 4. Connect the form to the handleSubmit wrapper */}
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          {errors.root?.serverError && (
             <p className="p-3 text-sm font-semibold text-red-800 bg-red-100 rounded-md">
-              {error}
+              {errors.root.serverError.message}
             </p>
           )}
 
@@ -51,15 +75,18 @@ const LoginPage = () => {
             </label>
             <input
               id="email"
-              name="email"
               type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              {...register("email")}
+              className={`w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="you@example.com"
             />
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -71,15 +98,18 @@ const LoginPage = () => {
             </label>
             <input
               id="password"
-              name="password"
               type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              {...register("password")}
+              className={`w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="••••••••"
             />
+            {errors.password && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <div>

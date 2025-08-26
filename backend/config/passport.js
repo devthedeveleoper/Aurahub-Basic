@@ -1,7 +1,10 @@
 const LocalStrategy = require("passport-local").Strategy;
+const JwtStrategy = require("passport-jwt").Strategy;
+const ExtractJwt = require("passport-jwt").ExtractJwt;
 const User = require("../models/User");
 
 module.exports = function (passport) {
+  // Local Strategy (for username/password login)
   passport.use(
     new LocalStrategy(
       { usernameField: "email" },
@@ -27,16 +30,22 @@ module.exports = function (passport) {
     )
   );
 
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
+  // JWT Strategy (for authenticating requests with a token)
+  const opts = {};
+  opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+  opts.secretOrKey = process.env.JWT_SECRET;
 
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await User.findById(id);
-      done(null, user);
-    } catch (err) {
-      done(err);
-    }
-  });
+  passport.use(
+    new JwtStrategy(opts, async (jwt_payload, done) => {
+      try {
+        const user = await User.findById(jwt_payload.id);
+        if (user) {
+          return done(null, user);
+        }
+        return done(null, false);
+      } catch (err) {
+        return done(err, false);
+      }
+    })
+  );
 };
