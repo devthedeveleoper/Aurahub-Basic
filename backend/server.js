@@ -56,6 +56,7 @@ app.use(
       httpOnly: true, // Prevent client-side JS from accessing the cookie
       sameSite: "none", // Required for cross-site cookies (Cloudflare -> Render)
       maxAge: 1000 * 60 * 60 * 24 * 7, // Cookie expires in 7 days
+      domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined,
     },
   })
 );
