@@ -58,7 +58,7 @@ const VideoThumbnail = ({ fileId, customThumbnailUrl, altText }) => {
       src={imageUrl}
       alt={altText}
       onError={handleImageError}
-      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+      className="w-full h-48 object-contain transition-transform duration-300 group-hover:scale-105"
     />
   );
 };

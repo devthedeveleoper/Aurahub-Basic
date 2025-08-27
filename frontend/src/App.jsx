@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage';
 import VideoPlayerPage from './pages/VideoPlayerPage';
 import ProfilePage from "./pages/ProfilePage";
 import UploadForm from './components/UploadForm';
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 function App() {
     const { setUser, clearUser } = useAuthStore();
@@ -60,6 +61,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/video/:id" element={<VideoPlayerPage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
         </Routes>
       </Router>
     );
