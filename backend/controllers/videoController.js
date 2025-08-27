@@ -6,11 +6,14 @@ const Comment = require("../models/Comment");
 
 const AURA_API_BASE_URL = "https://api.aurahub.fun";
 const FREEIMAGE_API_URL = "https://freeimage.host/api/1/upload";
+const UPLOAD_FOLDER_ID = process.env.UPLOAD_FOLDER_ID;
 
 // 1. Controller for Simple/Direct Upload Flow
 exports.getDirectUploadUrl = async (req, res) => {
   try {
-    const response = await axios.get(`${AURA_API_BASE_URL}/upload/url`);
+    const response = await axios.get(`${AURA_API_BASE_URL}/upload/url`, {
+      params: { folder: UPLOAD_FOLDER_ID },
+    });
     res.json(response.data);
   } catch (error) {
     console.error("Error getting direct upload URL:", error);
@@ -193,38 +196,40 @@ exports.getAllVideos = async (req, res) => {
 
 // Controller to get a single video by its ID (Corrected Version)
 exports.getVideoById = async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        // 1. Validate the ID format to prevent crashes
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid video ID format." });
-        }
-
-        // 2. Use the aggregation pipeline to get all data in one call
-        const videoId = new mongoose.Types.ObjectId(id);
-        const aggregation = buildVideoAggregation({ _id: videoId });
-        const results = await Video.aggregate(aggregation);
-
-        if (!results || results.length === 0) {
-            return res.status(404).json({ message: "Video not found" });
-        }
-        
-        const videoObject = results[0];
-
-        // 3. Calculate 'isLiked' directly from the aggregation result
-        const userId = req.user ? req.user.id : null;
-        if (userId && videoObject.likes) {
-            videoObject.isLiked = videoObject.likes.map(likeId => likeId.toString()).includes(userId);
-        } else {
-            videoObject.isLiked = false;
-        }
-
-        res.json(videoObject);
-    } catch (error) {
-        console.error("Error fetching video by ID:", error);
-        res.status(500).json({ message: "Server error" });
+    // 1. Validate the ID format to prevent crashes
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid video ID format." });
     }
+
+    // 2. Use the aggregation pipeline to get all data in one call
+    const videoId = new mongoose.Types.ObjectId(id);
+    const aggregation = buildVideoAggregation({ _id: videoId });
+    const results = await Video.aggregate(aggregation);
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    const videoObject = results[0];
+
+    // 3. Calculate 'isLiked' directly from the aggregation result
+    const userId = req.user ? req.user.id : null;
+    if (userId && videoObject.likes) {
+      videoObject.isLiked = videoObject.likes
+        .map((likeId) => likeId.toString())
+        .includes(userId);
+    } else {
+      videoObject.isLiked = false;
+    }
+
+    res.json(videoObject);
+  } catch (error) {
+    console.error("Error fetching video by ID:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Controller to increment the view count for a video
