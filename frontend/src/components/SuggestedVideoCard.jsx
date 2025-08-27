@@ -21,7 +21,7 @@ const SuggestedVideoCard = ({ video }) => {
           src={thumbnailUrl}
           alt={video.title}
           onError={handleImageError}
-          className="w-full h-full object-cover rounded-lg"
+          className="w-full h-full object-contain rounded-lg"
         />
       </div>
       {/* Video Info */}
