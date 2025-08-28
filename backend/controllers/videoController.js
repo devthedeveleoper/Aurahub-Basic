@@ -29,7 +29,7 @@ exports.startRemoteUpload = async (req, res) => {
   }
   try {
     const response = await axios.get(`${AURA_API_BASE_URL}/remote/add`, {
-      params: { url: videoUrl },
+      params: { url: videoUrl, folder: UPLOAD_FOLDER_ID },
     });
     res.status(202).json(response.data);
   } catch (error) {
